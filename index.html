@@ -2,206 +2,319 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Catat Cepat</title>
   <meta name="description" content="Catat transaksi Theo's Finance Tracker, tetap jalan saat offline.">
-  <meta name="theme-color" content="#0f766e" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0b1416" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#191919" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-view="catat">
   <header class="topbar">
-    <div class="topbar-row">
-      <h1 class="brand">Catat Cepat</h1>
-      <button id="btn-sync" class="sync-btn" type="button">
+    <div class="hello">
+      <img id="mascot" class="mascot mascot-sm" data-mascot="idle" alt="" width="36" height="36">
+      <div class="hello-text">
+        <h1 id="greeting">Catat Cepat</h1>
+        <p id="status-line" class="status-line" aria-live="polite"></p>
+      </div>
+      <button id="btn-sync" class="icon-btn" type="button" aria-label="Sinkron sekarang">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.65 8.03l1.46 1.46A8 8 0 0 0 12 4Zm0 14a6 6 0 0 1-5.65-8.03L4.89 8.51A8 8 0 0 0 12 20v3l4-4-4-4v3Z"/></svg>
-        <span>Sinkron</span>
       </button>
       <button id="btn-settings" class="icon-btn" type="button" aria-label="Pengaturan">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Zm7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.3 7.3 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.61.25-1.17.58-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66a.49.49 0 0 0-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1.01c.22.08.49 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.66Z"/></svg>
       </button>
     </div>
-    <div class="topbar-row status-row">
-      <span id="net-status" class="net-status" data-state="online"><span class="dot" aria-hidden="true"></span><span id="net-label">Online</span></span>
-      <span id="pending-badge" class="badge" hidden>0 belum terkirim</span>
-    </div>
-    <div id="sync-info" class="sync-info" aria-live="polite"></div>
   </header>
 
-  <div id="update-banner" class="banner banner-info" hidden>
-    Versi baru tersedia.
+  <div id="net-banner" class="banner banner-yellow" role="status" hidden>
+    <img class="mascot" data-mascot="sleepy" alt="" width="44" height="44">
+    <p id="net-text"></p>
+  </div>
+  <div id="update-banner" class="banner banner-blue" hidden>
+    <p>Ada versi baru aplikasi.</p>
     <button id="btn-update" type="button" class="link-btn">Muat ulang</button>
   </div>
-  <div id="setup-banner" class="banner banner-warn" hidden>
-    URL API belum diatur. Transaksi tetap disimpan di HP sampai diatur.
-    <button type="button" class="link-btn" data-goto="settings">Atur sekarang</button>
+  <div id="setup-banner" class="banner banner-gray" hidden>
+    <img class="mascot" data-mascot="wave" alt="" width="44" height="44">
+    <p>Belum tersambung ke Sheet. Catatan tetap aman di HP.</p>
+    <button type="button" class="link-btn" data-goto="settings">Sambungkan</button>
   </div>
 
   <main>
     <!-- CATAT -->
-    <section id="view-catat" class="view" data-view="catat">
+    <section class="view" data-view="catat">
       <form id="entry-form" autocomplete="off" novalidate>
+        <div class="seg" role="radiogroup" aria-label="Jenis catatan">
+          <span class="seg-pill" aria-hidden="true"></span>
+          <button type="button" role="radio" data-mode="out">Keluar</button>
+          <button type="button" role="radio" data-mode="in">Masuk</button>
+          <button type="button" role="radio" data-mode="move">Pindah/Tabung</button>
+        </div>
+
         <div class="field">
           <label for="amount">Jumlah</label>
           <div class="amount-wrap">
             <span class="amount-prefix" aria-hidden="true">Rp</span>
-            <input id="amount" name="amount" class="amount-input" inputmode="decimal" enterkeyhint="next" placeholder="25rb" aria-describedby="amount-preview err-amount">
+            <input id="amount" class="amount-input" inputmode="decimal" enterkeyhint="done" placeholder="0" aria-describedby="amount-preview err-amount">
           </div>
-          <div class="amount-tools">
-            <button type="button" class="chip chip-tool" data-suffix="000">000</button>
-            <button type="button" class="chip chip-tool" data-suffix="rb">rb</button>
-            <button type="button" class="chip chip-tool" data-suffix="jt">jt</button>
-            <button type="button" class="chip chip-tool" data-suffix="clear" aria-label="Hapus jumlah">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2Zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59Z"/></svg>
-            </button>
+          <p id="amount-preview" class="hint">Bisa ketik 25rb atau 1,5jt</p>
+          <div class="quick" role="group" aria-label="Jumlah cepat">
+            <button type="button" class="chip" data-quick="10000">10rb</button>
+            <button type="button" class="chip" data-quick="20000">20rb</button>
+            <button type="button" class="chip" data-quick="50000">50rb</button>
+            <button type="button" class="chip" data-quick="100000">100rb</button>
           </div>
-          <div id="amount-preview" class="hint" aria-live="polite">Contoh: 25000, 25k, 25rb, 1,5jt</div>
           <p id="err-amount" class="field-error" data-error-for="amount" data-input="amount" role="alert" hidden></p>
         </div>
 
         <div class="field">
-          <span class="label" id="category-label">Kategori <span id="type-tag" class="type-tag" hidden></span></span>
-          <div id="category-chips" class="chip-groups" role="radiogroup" aria-labelledby="category-label"></div>
+          <span class="label" id="cat-label">Kategori</span>
+          <div id="cat-chips" class="chips" role="radiogroup" aria-labelledby="cat-label"></div>
+          <button type="button" id="btn-more-cats" class="more-btn" aria-expanded="false" aria-controls="cat-chips" hidden></button>
           <p class="field-error" data-error-for="category" role="alert" hidden></p>
         </div>
 
-        <div class="field">
-          <label for="wallet" id="wallet-label">Dompet</label>
-          <select id="wallet" name="wallet"></select>
-          <p class="field-error" data-error-for="wallet" data-input="wallet" role="alert" hidden></p>
-        </div>
-
         <div class="field" id="field-goal" hidden>
-          <label for="goal">Goal</label>
-          <input id="goal" name="goal" list="goal-list" placeholder="Nama goal">
-          <datalist id="goal-list"></datalist>
+          <span class="label" id="goal-label">Goal tabungan</span>
+          <div id="goal-chips" class="hscroll" role="radiogroup" aria-labelledby="goal-label"></div>
+          <input id="goal" placeholder="Nama goal" aria-labelledby="goal-label" hidden>
           <p class="field-error" data-error-for="goal" data-input="goal" role="alert" hidden></p>
         </div>
 
+        <div class="field">
+          <span class="label" id="wallet-label">Dompet</span>
+          <div id="wallet-chips" class="hscroll" role="radiogroup" aria-labelledby="wallet-label"></div>
+          <p class="field-error" data-error-for="wallet" role="alert" hidden></p>
+        </div>
+
         <div class="field" id="field-to" hidden>
-          <label for="to-wallet">Ke dompet</label>
-          <select id="to-wallet" name="to"></select>
-          <p class="field-error" data-error-for="to" data-input="to-wallet" role="alert" hidden></p>
+          <span class="label" id="to-label">Ke dompet</span>
+          <div id="to-chips" class="hscroll" role="radiogroup" aria-labelledby="to-label"></div>
+          <p class="field-error" data-error-for="to" role="alert" hidden></p>
         </div>
 
         <div class="field">
-          <label for="date">Tanggal</label>
-          <div class="date-row">
-            <input id="date" name="date" type="date">
-            <button type="button" class="chip chip-tool" data-date="0">Hari ini</button>
-            <button type="button" class="chip chip-tool" data-date="-1">Kemarin</button>
+          <span class="label" id="date-label">Tanggal</span>
+          <div class="chips" role="radiogroup" aria-labelledby="date-label">
+            <button type="button" class="chip" role="radio" data-date="today">Hari ini</button>
+            <button type="button" class="chip" role="radio" data-date="yesterday">Kemarin</button>
+            <button type="button" class="chip" role="radio" data-date="pick" id="date-pick-chip">Pilih</button>
           </div>
+          <input id="date" type="date" aria-labelledby="date-label" hidden>
           <p class="field-error" data-error-for="date" data-input="date" role="alert" hidden></p>
         </div>
 
         <div class="field">
-          <label for="notes">Catatan</label>
-          <input id="notes" name="notes" placeholder="Opsional" enterkeyhint="done">
+          <button type="button" id="btn-notes" class="more-btn" aria-expanded="false" aria-controls="notes-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/></svg>catatan
+          </button>
+          <div id="notes-wrap" hidden>
+            <label for="notes">Catatan</label>
+            <input id="notes" placeholder="Opsional, misalnya: makan siang" enterkeyhint="done">
+          </div>
         </div>
 
         <div id="form-error" class="form-error" role="alert" hidden></div>
-        <button id="btn-save" type="submit" class="primary-btn">Simpan</button>
+
+        <div class="savebar">
+          <button id="btn-save" type="submit" class="primary-btn" aria-disabled="true" aria-describedby="save-reason">
+            <span id="save-main">Simpan</span>
+            <span id="save-reason" class="save-reason">Isi jumlah dulu</span>
+          </button>
+        </div>
       </form>
     </section>
 
     <!-- RINGKASAN -->
-    <section id="view-ringkasan" class="view" data-view="ringkasan" hidden>
-      <div id="summary-empty" class="empty" hidden>Belum ada ringkasan. Tekan <b>Sinkron</b> saat online.</div>
+    <section class="view" data-view="ringkasan" hidden>
+      <div id="summary-empty" class="empty" hidden>
+        <img class="mascot mascot-xl" data-mascot="wave" alt="" width="96" height="96">
+        <p>Belum ada ringkasan. Tekan tombol sinkron saat online, ya.</p>
+      </div>
       <div id="summary-body">
-        <div class="card">
-          <h2 id="month-label">Bulan ini</h2>
-          <div class="stats">
-            <div class="stat"><span>Pemasukan</span><b id="m-income" class="pos">–</b></div>
-            <div class="stat"><span>Pengeluaran</span><b id="m-expense" class="neg">–</b></div>
-            <div class="stat"><span>Sisa</span><b id="m-remaining">–</b></div>
-            <div class="stat"><span>Keluar hari ini</span><b id="m-today">–</b></div>
+        <div class="card hero">
+          <div class="hero-top">
+            <div>
+              <p id="month-label" class="eyebrow">Bulan ini</p>
+              <h2 class="hero-label">Sisa bulan ini</h2>
+              <p id="m-remaining" class="hero-num">–</p>
+            </div>
+            <img id="hero-mascot" class="mascot mascot-xl" data-mascot="happy" alt="" width="88" height="88">
+          </div>
+          <div class="hero-split">
+            <div class="split">
+              <span class="split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V7.8l-5.6 5.6L5 12l7-7 7 7-1.4 1.4L13 7.8V20h-1Z"/></svg>Masuk</span>
+              <b id="m-income">–</b>
+            </div>
+            <div class="split">
+              <span class="split-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12.2l5.6-5.6L19 12l-7 7-7-7 1.4-1.4 5.6 5.6V4h1Z"/></svg>Keluar</span>
+              <b id="m-expense">–</b>
+            </div>
+            <div class="split">
+              <span class="split-label">Keluar hari ini</span>
+              <b id="m-today">–</b>
+            </div>
           </div>
           <p id="pending-note" class="hint" hidden></p>
         </div>
+
         <div class="card">
-          <h2>Saldo dompet</h2>
-          <ul id="wallet-list" class="rows"></ul>
-          <div class="rows-total"><span>Total</span><b id="wallet-total">–</b></div>
-        </div>
-        <div class="card">
-          <h2>Rencana vs realisasi</h2>
+          <h2>Budget per kategori</h2>
           <ul id="plan-list" class="plan"></ul>
         </div>
+
+      </div>
+    </section>
+
+    <!-- DOMPET -->
+    <section class="view" data-view="dompet" hidden>
+      <div id="wallets-empty" class="empty" hidden>
+        <img class="mascot mascot-xl" data-mascot="wave" alt="" width="96" height="96">
+        <p>Kartu dompet muncul setelah sinkron pertama.</p>
+      </div>
+      <div id="wallets-body" class="wallets">
+        <!-- List mode shows the total; detail mode swaps in "Selesai" in the same spot, so nothing jumps. -->
+        <div id="wallet-head" class="wallet-head" data-mode="list">
+          <div class="wh-list">
+            <div>
+              <p class="eyebrow">Total saldo</p>
+              <p id="wallet-total" class="hero-num">–</p>
+            </div>
+            <img id="wallet-mascot" class="mascot mascot-xl" data-mascot="worried" alt="" width="72" height="72" hidden>
+          </div>
+          <div class="wh-detail">
+            <button id="wallet-done" type="button" class="small-btn">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12l4.6-4.6Z"/></svg>Selesai
+            </button>
+          </div>
+        </div>
+        <ul id="wallet-stack" class="wallet-stack" aria-label="Kartu dompet"></ul>
+        <p id="wallet-hint" class="hint center">Ketuk atau geser kartu ke atas untuk lihat detail.</p>
+        <div id="wallet-detail" class="wallet-detail" hidden></div>
       </div>
     </section>
 
     <!-- TERAKHIR -->
-    <section id="view-terakhir" class="view" data-view="terakhir" hidden>
+    <section class="view" data-view="terakhir" hidden>
       <div id="outbox-section" hidden>
-        <h2 class="section-title">Belum terkirim</h2>
+        <div class="section-head">
+          <h2>Menunggu kirim</h2>
+          <button id="btn-retry" type="button" class="small-btn">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.65 8.03l1.46 1.46A8 8 0 0 0 12 4Zm0 14a6 6 0 0 1-5.65-8.03L4.89 8.51A8 8 0 0 0 12 20v3l4-4-4-4v3Z"/></svg>Kirim sekarang
+          </button>
+        </div>
         <ul id="outbox-list" class="tx-list"></ul>
       </div>
-      <h2 class="section-title">Transaksi terakhir</h2>
-      <ul id="recent-list" class="tx-list"></ul>
-      <div id="recent-empty" class="empty" hidden>Belum ada data. Tekan <b>Sinkron</b> saat online.</div>
+      <div id="recent-groups"></div>
+      <div id="recent-empty" class="empty" hidden>
+        <img class="mascot mascot-xl" data-mascot="wave" alt="" width="96" height="96">
+        <p>Belum ada catatan di sini. Yuk catat yang pertama!</p>
+        <button type="button" class="primary-btn" data-goto="catat">Catat sekarang</button>
+      </div>
+      <p id="last-sync" class="hint center"></p>
     </section>
 
     <!-- PENGATURAN -->
-    <section id="view-settings" class="view" data-view="settings" hidden>
+    <section class="view" data-view="settings" hidden>
+      <div class="setup-hero">
+        <img class="mascot mascot-xl" data-mascot="wave" alt="" width="88" height="88">
+        <div>
+          <h2>Sambungkan ke Sheet</h2>
+          <p class="hint">Cukup 3 langkah, sekali saja.</p>
+        </div>
+      </div>
       <form id="settings-form" autocomplete="off" novalidate>
-        <div class="card">
-          <h2>Koneksi Apps Script</h2>
-          <div class="field">
-            <label for="set-url">URL web app (/exec)</label>
-            <input id="set-url" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec">
-            <p class="field-error" data-error-for="url" data-input="set-url" role="alert" hidden></p>
-          </div>
-          <div class="field">
-            <label for="set-token">Token rahasia</label>
-            <div class="inline">
-              <input id="set-token" type="password" autocomplete="off" spellcheck="false">
-              <button id="btn-toggle-token" type="button" class="chip chip-tool">Lihat</button>
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num" aria-hidden="true">1</span>
+            <div class="step-body">
+              <label for="set-url">Tempel URL web app</label>
+              <p class="hint">Dari Apps Script, menu Deploy. Akhirnya <code>/exec</code>.</p>
+              <input id="set-url" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec">
+              <p class="field-error" data-error-for="url" data-input="set-url" role="alert" hidden></p>
             </div>
-          </div>
-          <div class="btn-row">
-            <button type="submit" class="primary-btn">Simpan pengaturan</button>
-            <button id="btn-test" type="button" class="secondary-btn">Tes koneksi</button>
-          </div>
-          <p id="settings-msg" class="hint" aria-live="polite"></p>
-        </div>
-
-        <div class="card">
-          <h2>Mode demo</h2>
-          <label class="check"><input id="set-mock" type="checkbox"> Pakai API tiruan (data contoh di HP ini)</label>
-          <label class="check" id="row-mock-down"><input id="set-mock-down" type="checkbox"> Simulasikan server tidak terjangkau</label>
-          <button id="btn-mock-reset" type="button" class="secondary-btn">Reset data demo</button>
-          <p class="hint">Bisa juga dibuka dengan <code>?mock=1</code> (matikan dengan <code>?mock=0</code>). Catatan berisi <code>#gagal</code> akan ditolak server tiruan.</p>
-        </div>
-
-        <div class="card">
-          <h2>Data di HP</h2>
-          <div class="btn-row">
-            <button id="btn-export" type="button" class="secondary-btn">Salin data belum terkirim</button>
-          </div>
-          <p id="storage-msg" class="hint"></p>
-          <p class="hint">Versi aplikasi: <span id="app-version"></span></p>
-        </div>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">2</span>
+            <div class="step-body">
+              <label for="set-token">Tempel token rahasia</label>
+              <p class="hint">Dari menu di spreadsheet. Jangan dibagikan.</p>
+              <div class="inline">
+                <input id="set-token" type="password" autocomplete="off" spellcheck="false">
+                <button id="btn-toggle-token" type="button" class="chip">Lihat</button>
+              </div>
+              <p class="field-error" data-error-for="token" data-input="set-token" role="alert" hidden></p>
+            </div>
+          </li>
+          <li class="step">
+            <span class="step-num" aria-hidden="true">3</span>
+            <div class="step-body">
+              <span class="label">Tes koneksi</span>
+              <button id="btn-test" type="submit" class="primary-btn">Simpan &amp; tes koneksi</button>
+              <div id="settings-result" class="result" hidden>
+                <img id="result-mascot" class="mascot" data-mascot="happy" alt="" width="44" height="44">
+                <p id="settings-msg" aria-live="polite"></p>
+              </div>
+            </div>
+          </li>
+        </ol>
       </form>
+
+      <form id="accounts" class="card" autocomplete="off" novalidate>
+        <h2>Nomor rekening &amp; e-wallet</h2>
+        <p class="hint">Muncul di kartu dompet dan bisa langsung disalin. Disimpan di HP ini saja. Kalau kosong, dipakai nomor dari Sheet (kalau ada).</p>
+        <div class="field">
+          <label for="acc-holder">Atas nama (opsional)</label>
+          <input id="acc-holder" autocapitalize="words" placeholder="Nama di rekening">
+        </div>
+        <div id="acc-rows"></div>
+        <button type="submit" class="primary-btn">Simpan nomor</button>
+        <p id="acc-msg" class="hint" aria-live="polite"></p>
+      </form>
+
+      <div class="card">
+        <h2>Mode demo</h2>
+        <label class="check"><input id="set-mock" type="checkbox"> Pakai data contoh (tidak menyentuh Sheet)</label>
+        <label class="check" id="row-mock-down"><input id="set-mock-down" type="checkbox"> Pura-pura server tidak terjangkau</label>
+        <button id="btn-mock-reset" type="button" class="secondary-btn">Reset data demo</button>
+        <p class="hint">Bisa juga lewat <code>?mock=1</code> (matikan dengan <code>?mock=0</code>). Catatan berisi <code>#gagal</code> akan ditolak server tiruan.</p>
+      </div>
+
+      <div class="card">
+        <h2>Data di HP</h2>
+        <button id="btn-export" type="button" class="secondary-btn">Salin data yang belum terkirim</button>
+        <p id="storage-msg" class="hint"></p>
+        <p class="hint">Versi aplikasi <span id="app-version"></span></p>
+      </div>
     </section>
   </main>
 
   <nav class="tabbar" aria-label="Menu">
-    <button type="button" class="tab" data-goto="catat" aria-current="page">
+    <span class="tab-ind" aria-hidden="true"></span>
+    <button type="button" class="tab" data-goto="catat">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z"/></svg><span>Catat</span>
     </button>
     <button type="button" class="tab" data-goto="ringkasan">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9.2h3V19H5V9.2ZM10.6 5h2.8v14h-2.8V5Zm5.6 8H19v6h-2.8v-6Z"/></svg><span>Ringkasan</span>
+    </button>
+    <button type="button" class="tab" data-goto="dompet">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 7.28V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2.28A2 2 0 0 0 22 15V9a2 2 0 0 0-1-1.72ZM20 9v6h-7V9h7ZM5 19V5h14v2h-6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6v2H5Zm11-5.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg><span>Dompet</span>
     </button>
     <button type="button" class="tab" data-goto="terakhir">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3Zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12Z"/></svg><span>Terakhir</span>
     </button>
   </nav>
 
-  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toast-text"></span>
+    <button id="toast-action" type="button" class="toast-action" hidden></button>
+  </div>
 
+  <script src="mascot.js"></script>
+  <script src="wallets.js"></script>
   <script src="core.js"></script>
   <script src="app.js"></script>
 </body>

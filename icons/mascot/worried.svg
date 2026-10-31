@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Placeholder mascot, worried (over budget, negative balance, sync error): a chibi version of the user's dog. Replace with the real art (same file name). -->
+  <defs>
+    <radialGradient id="fur" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#5E524C"/><stop offset=".55" stop-color="#2B2523"/><stop offset="1" stop-color="#161211"/></radialGradient>
+    <radialGradient id="tan" cx=".4" cy=".28" r=".8"><stop offset="0" stop-color="#F2BE80"/><stop offset=".6" stop-color="#C98A4B"/><stop offset="1" stop-color="#9C632E"/></radialGradient>
+    <radialGradient id="white" cx=".4" cy=".3" r=".8"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".7" stop-color="#FFF6EA"/><stop offset="1" stop-color="#E4D3BE"/></radialGradient>
+    <radialGradient id="beret" cx=".32" cy=".22" r=".9"><stop offset="0" stop-color="#4C5E94"/><stop offset=".5" stop-color="#1F2A44"/><stop offset="1" stop-color="#0F1528"/></radialGradient>
+    <radialGradient id="nose" cx=".38" cy=".28" r=".8"><stop offset="0" stop-color="#5A4D4D"/><stop offset="1" stop-color="#121010"/></radialGradient>
+    <radialGradient id="eye" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#7A4D35"/><stop offset="1" stop-color="#1E120B"/></radialGradient>
+    <radialGradient id="ground" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+    <linearGradient id="tassel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFA766"/><stop offset="1" stop-color="#C4531A"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+  </defs>
+  <ellipse cx="60" cy="116" rx="36" ry="4" fill="url(#ground)"/>
+  <g fill="#FFFFFF" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round">
+    <ellipse cx="60" cy="105" rx="32" ry="12"/>
+    <ellipse cx="60" cy="68" rx="39" ry="35"/>
+    <path d="M14 42 Q16 18 58 16 Q104 16 106 40 Q100 52 60 50 Q20 52 14 42 Z"/>
+  </g>
+  <ellipse cx="60" cy="105" rx="32" ry="12" fill="url(#fur)"/>
+  <path d="M47 96 Q60 91 73 96 Q70 112 60 116 Q50 112 47 96 Z" fill="url(#white)"/>
+  <path d="M24 60 Q16 82 30 96 L36 74 Z" fill="url(#fur)"/>
+  <path d="M96 60 Q104 82 90 96 L84 74 Z" fill="url(#fur)"/>
+  <ellipse cx="60" cy="68" rx="38" ry="34" fill="url(#fur)"/>
+  <path d="M30 66 Q32 46 60 46 Q88 46 90 66 Q92 90 60 98 Q28 90 30 66 Z" fill="url(#tan)"/>
+  <path d="M55 44 Q60 41 65 44 L68 74 Q60 79 52 74 Z" fill="url(#white)"/>
+  <ellipse cx="60" cy="85" rx="16" ry="12" fill="url(#white)"/>
+  <ellipse cx="45" cy="54" rx="4" ry="2.6" fill="#E2A867"/>
+  <ellipse cx="75" cy="54" rx="4" ry="2.6" fill="#E2A867"/>
+  <path d="M24 46 Q60 58 96 46 L96 58 Q60 66 24 58 Z" fill="url(#shade)"/>
+  <ellipse cx="38" cy="74" rx="5" ry="3" fill="#F2A7A0" opacity=".7"/>
+  <ellipse cx="82" cy="74" rx="5" ry="3" fill="#F2A7A0" opacity=".7"/>
+  <path d="M53 78 Q60 74 67 78 Q66 84 60 86 Q54 84 53 78 Z" fill="url(#nose)"/>
+  <ellipse cx="57.5" cy="77.6" rx="2.6" ry="1.3" fill="#FFFFFF" opacity=".7"/>
+  <path d="M39 55 L51 51" fill="none" stroke="#2B2523" stroke-width="2.8" stroke-linecap="round"/>
+  <path d="M81 55 L69 51" fill="none" stroke="#2B2523" stroke-width="2.8" stroke-linecap="round"/>
+  <circle cx="46" cy="64" r="5" fill="url(#eye)"/>
+  <circle cx="74" cy="64" r="5" fill="url(#eye)"/>
+  <circle cx="47.6" cy="62.2" r="1.7" fill="#FFFFFF"/>
+  <circle cx="75.6" cy="62.2" r="1.7" fill="#FFFFFF"/>
+  <path d="M53 94 Q56.5 90 60 94 Q63.5 98 67 94" fill="none" stroke="#2B2523" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M19 70 Q16 84 20 92" fill="none" stroke="#E8742A" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M16 92 h8 l-1 10 h-6 Z" fill="url(#tassel)"/>
+  <path d="M14 42 Q16 18 58 16 Q104 16 106 40 Q100 52 60 50 Q20 52 14 42 Z" fill="url(#beret)"/>
+  <ellipse cx="42" cy="26" rx="14" ry="4.5" fill="#FFFFFF" opacity=".16" transform="rotate(-10 42 26)"/>
+  <path d="M18 42 Q60 54 102 40" fill="none" stroke="#0A0F1E" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+  <circle cx="60" cy="16" r="3.5" fill="url(#beret)"/>
+  <circle cx="59" cy="15" r="1.1" fill="#FFFFFF" opacity=".35"/>
+  <path d="M19 44 Q19 58 19 70" fill="none" stroke="#E8742A" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M100 52 Q106 62 100 67 Q94 62 100 52 Z" fill="#6CB4EE" stroke="#2383E2" stroke-width="1.5"/>
+</svg>

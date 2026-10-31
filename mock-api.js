@@ -100,7 +100,11 @@
     return {
       user: 'demo@contoh.id',
       today,
-      wallets: Object.keys(db.balances).map((name) => ({ name, balance: bal[name], uses: uses[name] || 0 })),
+      // `account` / `holder` are optional sheet fields; two demo wallets carry them to show the copy button.
+      wallets: Object.keys(db.balances).map((name) => ({
+        name, balance: bal[name], uses: uses[name] || 0,
+        ...({ BCA: { account: '1234567890', holder: 'Demo Pengguna' }, GoPay: { account: '081234567890' } }[name] || {}),
+      })),
       defaultWallet: db.defaultWallet,
       expense: db.expense,
       income: db.income,

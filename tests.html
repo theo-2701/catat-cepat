@@ -16,10 +16,11 @@
   </style>
 </head>
 <body>
-  <h1>Self-check: parser jumlah &amp; logika outbox</h1>
+  <h1>Self-check: logika di core.js</h1>
   <p id="summary">Menjalankan…</p>
   <ul id="results"></ul>
   <script src="core.js"></script>
+  <script src="wallets.js"></script>
   <script>
     'use strict';
     const results = [];
@@ -70,6 +71,58 @@
     check('empty or broken reply keeps every item', () => {
       assertEq(settleBatch(batch, null).failed.length, 4);
       assertEq(settleBatch(batch, { ok: true }).failed.length, 4);
+    });
+
+    // validateEntry: same order as the form, first problem wins
+    const ok = { amount: 25000, category: 'Makan & Minum', type: 'Expense', wallet: 'BCA', goal: '', to: '', date: '2026-10-31' };
+    check('validateEntry accepts a complete expense', () => assertEq(validateEntry(ok), null));
+    const field = (patch) => (validateEntry({ ...ok, ...patch }) || {}).field;
+    check('validateEntry: amount first', () => assertEq(field({ amount: null, category: '' }), 'amount'));
+    check('validateEntry: NaN or 0 amount', () => assertEq([field({ amount: NaN }), field({ amount: 0 })], ['amount', 'amount']));
+    check('validateEntry: category', () => assertEq(field({ category: '' }), 'category'));
+    check('validateEntry: wallet', () => assertEq(field({ wallet: '' }), 'wallet'));
+    check('validateEntry: Tabungan needs a goal', () => assertEq(field({ category: 'Tabungan', type: 'Saving' }), 'goal'));
+    check('validateEntry: Transfer needs a different destination', () => assertEq(
+      [field({ category: 'Transfer', type: 'Transfer' }), field({ category: 'Transfer', type: 'Transfer', to: 'BCA' }), field({ category: 'Transfer', type: 'Transfer', to: 'GoPay' })],
+      ['to', 'to', undefined]));
+    check('validateEntry: date', () => assertEq(field({ date: '' }), 'date'));
+    check('validateEntry gives a short reason for the button', () => assertEq(validateEntry({ ...ok, amount: null }).short, 'Isi jumlah dulu'));
+
+    // Days, money, names, colors
+    check('dayLabel today / yesterday / weekday', () => assertEq(
+      [dayLabel('2026-10-31', '2026-10-31'), dayLabel('2026-10-30', '2026-10-31'), dayLabel('2026-10-28', '2026-10-31'), dayLabel('2025-12-31', '2026-01-02')],
+      ['Hari ini', 'Kemarin', 'Rab, 28 Okt', 'Rab, 31 Des 2025']));
+    check('dayLabel across a month boundary', () => assertEq(dayLabel('2026-10-31', '2026-11-01'), 'Kemarin'));
+    check('groupByDay: newest day first, order kept within a day', () => {
+      const g = groupByDay([{ id: 1, date: '2026-10-30' }, { id: 2, date: '2026-10-31' }, { id: 3, date: '2026-10-31' }], '2026-10-31');
+      assertEq(g.map((d) => [d.label, d.items.map((i) => i.id)]), [['Hari ini', [2, 3]], ['Kemarin', [1]]]);
+    });
+    check('formatRp', () => assertEq([formatRp(25000), formatRp(-1500), formatRp(500, '+')], ['Rp25.000', '−Rp1.500', '+Rp500']));
+    check('formatShort', () => assertEq(
+      [formatShort(45000), formatShort(2400000), formatShort(2000000), formatShort(-1250000), formatShort(undefined)],
+      ['Rp45.000', 'Rp2,4jt', 'Rp2jt', '−Rp1,3jt', 'Rp0']));
+    check('firstName', () => assertEq([firstName('theo.wijaya@gmail.com'), firstName('Theo Wijaya'), firstName(''), firstName(null)], ['Theo', 'Theo', '', '']));
+    check('catColor is stable and from the palette', () => {
+      assertEq(catColor('Makan & Minum'), catColor('Makan & Minum'));
+      assertEq(TAG_COLORS.includes(catColor('Gaji')), true);
+    });
+
+    // Account numbers
+    check('isValidAccount', () => assertEq(
+      ['1234567890', '0812-3456-7890', '+62 812 3456', '', 'abc123', '12+3'].map(isValidAccount),
+      [true, true, true, true, false, false]));
+    check('cleanAccount keeps digits and a leading +', () => assertEq(
+      [cleanAccount('0812-3456 7890'), cleanAccount(' +62 812.3456 '), cleanAccount('')], ['081234567890', '+628123456', '']));
+    check('groupDigits in fours', () => assertEq(
+      [groupDigits('1234567890'), groupDigits('+62812345'), groupDigits('')], ['1234 5678 90', '+6281 2345', '']));
+
+    // Wallet card styles
+    check('walletStyle matches names loosely', () => assertEq(
+      ['BCA', 'Bank Jago', 'GoPay', 'CIMB Niaga', 'ShopeePay', 'Cash'].map((n) => walletStyle(n).key),
+      ['bca', 'jago', 'gopay', 'cimbniaga', 'shopeepay', 'cash']));
+    check('walletStyle gives unknown wallets a stable fallback', () => {
+      const a = walletStyle('Dompet Rahasia');
+      assertEq([a.key, a.mark, a.from === walletStyle('Dompet Rahasia').from, WALLET_FALLBACKS.some((f) => f[0] === a.from)], ['', 'Dompet Rahasia', true, true]);
     });
 
     const failed = results.filter((r) => !r[0]).length;

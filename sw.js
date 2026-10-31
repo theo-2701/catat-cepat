@@ -2,12 +2,18 @@
  * Bump VERSION (and APP_VERSION in app.js) on every deploy so phones pick up the new files.
  * Requests to the Apps Script API are cross-origin and never touched here. */
 // shortcut: cache-first means a deploy reaches phones only after a VERSION bump, switch to stale-while-revalidate if bumps get forgotten.
-const VERSION = '1.1.0';
+const VERSION = '1.3.1';
 const PREFIX = 'catat-cepat-shell-';
 const CACHE = PREFIX + VERSION;
+// Mascot extension and wallet logo files each live in one place; the worker reads the same files as the page.
+importScripts('mascot.js', 'wallets.js');
 const SHELL = [
   './',
   './index.html',
+  './mascot.js',
+  './wallets.js',
+  ...self.MASCOT.states.map((s) => `./icons/mascot/${s}.${self.MASCOT.ext}`),
+  ...Object.values(self.WALLET_STYLES).filter((s) => s.logo).map((s) => `./icons/wallets/${s.logo}`),
   './core.js',
   './app.js',
   './styles.css',
