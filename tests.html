@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Catat Cepat – self-check</title>
+  <style>
+    body { font: 16px/1.5 system-ui, sans-serif; margin: 16px; }
+    h1 { font-size: 1.2rem; }
+    #summary { font-weight: 700; }
+    .pass { color: #15803d; }
+    .fail { color: #b42318; }
+    @media (prefers-color-scheme: dark) { .pass { color: #4ade80; } .fail { color: #f87171; } }
+    li { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <h1>Self-check: parser jumlah &amp; logika outbox</h1>
+  <p id="summary">Menjalankan…</p>
+  <ul id="results"></ul>
+  <script src="core.js"></script>
+  <script>
+    'use strict';
+    const results = [];
+    function check(name, fn) {
+      try { fn(); results.push([true, name]); } catch (e) { results.push([false, `${name}: ${e.message}`]); }
+    }
+    function assertEq(actual, expected) {
+      const a = JSON.stringify(actual);
+      const b = JSON.stringify(expected);
+      if (a !== b) throw new Error(`dapat ${a}, harusnya ${b}`);
+    }
+
+    // parseAmount
+    const amounts = {
+      '25000': 25000, '25k': 25000, '25rb': 25000, '25 rb': 25000, '100ribu': 100000,
+      '1,5jt': 1500000, '1.5jt': 1500000, '1,25 juta': 1250000, '2jt': 2000000, '0,5k': 500,
+      '25.000': 25000, '1.250.000': 1250000, '1.250.000,50': 1250001, 'Rp 30rb': 30000, '12,5': 13,
+    };
+    for (const [input, want] of Object.entries(amounts)) check(`parseAmount("${input}") = ${want}`, () => assertEq(parseAmount(input), want));
+    check('parseAmount("") = null', () => assertEq(parseAmount(''), null));
+    for (const bad of ['abc', '25x', '1.25.000', 'rb']) check(`parseAmount("${bad}") = NaN`, () => assertEq(Number.isNaN(parseAmount(bad)), true));
+
+    // toWire
+    check('toWire sends only contract fields', () => assertEq(
+      toWire({ clientId: 'a', date: '2026-10-31', amount: 5, category: 'Transfer', wallet: 'BCA', to: 'GoPay', type: 'Transfer', status: 'error', error: 'x', createdAt: 1 }),
+      { clientId: 'a', date: '2026-10-31', amount: 5, category: 'Transfer', wallet: 'BCA', notes: '', goal: '', to: 'GoPay' }));
+
+    // settleBatch
+    const batch = ['a', 'b', 'c', 'd'].map((clientId) => ({ clientId }));
+    check('saved and duplicate leave the outbox; error and missing stay', () => {
+      const r = settleBatch(batch, { ok: true, results: [
+        { clientId: 'a', status: 'saved', ids: ['1'] },
+        { clientId: 'b', status: 'duplicate', ids: ['0'] },
+        { clientId: 'c', status: 'error', ids: [], error: 'Kategori tidak dikenal' },
+      ] });
+      assertEq(r.sent, ['a', 'b']);
+      assertEq(r.failed.map((f) => [f.item.clientId, f.error]), [['c', 'Kategori tidak dikenal'], ['d', 'Tidak ada hasil dari server untuk transaksi ini']]);
+      assertEq(r.fatal, '');
+    });
+    check('unknown status keeps the item', () => {
+      const r = settleBatch([{ clientId: 'a' }], { ok: true, results: [{ clientId: 'a', status: 'queued' }] });
+      assertEq([r.sent, r.failed.length], [[], 1]);
+    });
+    check('ok:false keeps every item with the server message', () => {
+      const r = settleBatch(batch, { ok: false, error: 'Token tidak valid' });
+      assertEq([r.sent, r.failed.length, r.fatal, r.failed[0].error], [[], 4, 'Token tidak valid', 'Token tidak valid']);
+    });
+    check('empty or broken reply keeps every item', () => {
+      assertEq(settleBatch(batch, null).failed.length, 4);
+      assertEq(settleBatch(batch, { ok: true }).failed.length, 4);
+    });
+
+    const failed = results.filter((r) => !r[0]).length;
+    document.getElementById('summary').textContent = failed ? `${failed} dari ${results.length} GAGAL` : `Semua ${results.length} cek lolos`;
+    document.getElementById('summary').className = failed ? 'fail' : 'pass';
+    document.getElementById('results').replaceChildren(...results.map(([ok, name]) => {
+      const li = document.createElement('li');
+      li.className = ok ? 'pass' : 'fail';
+      li.textContent = `${ok ? 'LOLOS' : 'GAGAL'} — ${name}`;
+      return li;
+    }));
+  </script>
+</body>
+</html>
